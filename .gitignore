@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# secrets - NEVER commit these
+.env
+*.env.local
+!.env.example
+
+# build output / logs
+dist/
+build/
+*.log
+.DS_Store

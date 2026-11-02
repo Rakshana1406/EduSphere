@@ -1,0 +1,18 @@
+{
+  "courses": [
+    {
+      "id": "1",
+      "title": "Full Stack Web Development",
+      "instructor": "Dr. Smith",
+      "duration": "8 Weeks",
+      "description": "Learn full stack development..."
+    },
+    {
+      "id": "2",
+      "title": "Data Structures",
+      "instructor": "Prof. Alan",
+      "duration": "6 Weeks",
+      "description": "Master data structures and algorithms..."
+    }
+  ]
+}
