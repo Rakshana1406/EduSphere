@@ -1,147 +1,252 @@
-# EduSphere
+# Student Course Management and Learning Progress Tracking System
 
-A full-stack web application where students register, log in, browse and enroll in courses,
-and admins manage courses and students. Includes JWT authentication, role-based access,
-MongoDB persistence and real-time notifications/chat with Socket.IO.
+## Project Overview
+
+The Student Course Management and Learning Progress Tracking System is a full-stack web application designed to streamline academic course enrollment and learning management. The system allows students to create accounts, browse available courses, enroll in courses, access course materials, track their learning progress, and receive updates regarding their courses.
+
+The application also provides administrators with tools to manage students, courses, enrollments, and progress reports.
+
+This project demonstrates key concepts in Full Stack Web Development, including frontend development, backend APIs, database management, authentication, deployment, and application security.
 
 ## Problem Statement
-Colleges and training institutes still manage course catalogues and enrollments with spreadsheets
-and messages. This project gives students one place to discover courses, enroll, track progress and
-get certificates, and gives admins one place to manage courses, students and enrollments.
 
-## Target Users
-| User | Needs |
-|------|-------|
-| Student | Register/login, browse courses, enroll/drop, track progress, get certificate, get notified, chat |
-| Admin | Add/edit/delete courses, view/delete students, view enrollments, receive enrollment alerts |
+In many educational institutions, students face challenges such as:
 
-## Features
-- Registration & login (client-side + server-side validation)
-- JWT authentication, protected routes, student/admin roles
-- EduSphere (CRUD, admin only) and public course browsing
-- Enrollment: enroll, drop, mark complete, certificate
-- Student & admin dashboards
-- Real-time notifications (new course, enrollment) and 1-to-1 chat (Socket.IO) with online status
-- Security: bcrypt password hashing, helmet, CORS allow-list, rate-limited auth, input sanitising, central error handling
-- Responsive UI (desktop / tablet / mobile)
+- Finding available courses
+- Registering for courses efficiently
+- Monitoring learning progress
+- Accessing course information in one place
+- Tracking completed and pending modules
 
-## Tech Stack
-React 19 + Vite, React Router, Context API, Axios, Socket.IO client ·
-Node.js, Express 5, Mongoose, MongoDB, JWT, bcryptjs, Socket.IO
+Similarly, administrators often encounter difficulties in managing course enrollments and monitoring student performance.
 
-## Folder Structure
-```
-EduSphere/
-├── backend/
-│   ├── config/db.js              # MongoDB connection
-│   ├── controllers/              # request handlers
-│   ├── middleware/               # auth, roles, validation, sanitize, errors
-│   ├── models/                   # User, Course, Enrollment, Notification, Message
-│   ├── routes/                   # auth, courses, students, enrollments, notifications, messages
-│   ├── services/                 # business logic
-│   ├── seed/                     # sample courses + seed script
-│   ├── socket.js                 # Socket.IO (JWT-secured)
-│   ├── server.js                 # entry point
-│   └── .env.example
-├── react-frontend/
-│   └── src/ (api, auth, components, context, pages, services, styles, utils)
-├── mock-api/db.json              # earlier JSON-Server mock (Task 7)
-└── README.md
-```
+This system addresses these challenges by providing a centralized web-based platform for academic course management and progress tracking.
 
-## Setup (local)
-Prerequisites: Node 18+ and MongoDB running locally (or a MongoDB Atlas URI).
+## Project Objectives
 
-```bash
-# 1) Backend
-cd backend
-npm install
-cp .env.example .env        # then edit JWT_SECRET, ADMIN_REGISTRATION_KEY, MONGO_URI
-npm run seed                # sample courses + default admin
-npm run dev                 # http://localhost:5000
+- Provide secure student registration and login.
+- Allow students to browse and enroll in available courses.
+- Enable administrators to create and manage courses.
+- Track student learning progress.
+- Generate progress reports.
+- Provide real-time notifications and updates.
+- Maintain secure access to academic data.
 
-# 2) Frontend (new terminal)
-cd react-frontend
-npm install
-cp .env.example .env
-npm run dev                 # http://localhost:5173
-```
+## User Roles
 
-## REST API (also available under /api/v1/...)
-| Method | Endpoint | Access |
-|--------|----------|--------|
-| GET | `/` , `/api/health` | public |
-| POST | `/api/auth/register` , `/api/auth/login` | public |
-| GET | `/api/auth/me` | logged in |
-| GET | `/api/courses` , `/api/courses/:id` | public |
-| POST / PUT / DELETE | `/api/courses` , `/api/courses/:id` | admin |
-| GET | `/api/students` | admin |
-| GET / PUT | `/api/students/:id` | admin or that student |
-| DELETE | `/api/students/:id` | admin |
-| POST | `/api/enrollments` | student |
-| GET | `/api/enrollments/my` | student |
-| PATCH | `/api/enrollments/:id/complete` | student |
-| GET | `/api/enrollments` | admin |
-| DELETE | `/api/enrollments/:id` | student (own) / admin |
-| GET / PATCH | `/api/notifications`, `/api/notifications/read-all`, `/api/notifications/:id/read` | logged in |
-| GET | `/api/messages/contacts`, `/api/messages/:userId` | logged in |
+### Student
 
-Socket events: `notification`, `chat:send`, `chat:message`, `chat:typing`, `presence`, `presence:list`.
+Students can:
 
-## Database Schema (ER diagram)
-```mermaid
-erDiagram
-    USER ||--o{ ENROLLMENT : makes
-    COURSE ||--o{ ENROLLMENT : has
-    USER ||--o{ NOTIFICATION : receives
-    USER ||--o{ MESSAGE : sends
-    USER {
-        ObjectId _id PK
-        string name
-        string email UK
-        string passwordHash
-        string role "student|admin"
-        string department
-        string phone
-    }
-    COURSE {
-        ObjectId _id PK
-        string courseName
-        string courseCode UK
-        string instructor
-        string duration
-        string category
-        string level
-        string overview
-    }
-    ENROLLMENT {
-        ObjectId _id PK
-        ObjectId student FK
-        ObjectId course FK
-        string status "active|completed"
-        number progress
-        date enrolledAt
-    }
-    NOTIFICATION {
-        ObjectId _id PK
-        ObjectId user FK
-        string message
-        boolean read
-    }
-    MESSAGE {
-        ObjectId _id PK
-        ObjectId from FK
-        ObjectId to FK
-        string text
-    }
-```
-(`ENROLLMENT` has a unique index on `student + course`.)
+- Register and log in
+- View their profile
+- Browse available courses
+- Enroll in courses
+- Access course content
+- Track learning progress
+- View course completion percentage
+- Receive notifications
 
-## Deployment
-- **Database:** MongoDB Atlas (free tier) – copy the connection string.
-- **Backend (Render):** root `backend`, build `npm install`, start `npm start`. Env vars: `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CLIENT_URL` (your Vercel URL), `ADMIN_REGISTRATION_KEY`, `NODE_ENV=production`.
-- **Frontend (Vercel/Netlify):** root `react-frontend`, build `npm run build`, output `dist`. Env vars: `VITE_API_URL=https://<backend>/api/v1`, `VITE_SOCKET_URL=https://<backend>`. Add a rewrite of all paths to `/index.html` (a `vercel.json` is included).
+### Administrator
 
-## Live URLs
-- Frontend: _add after deploy_
-- Backend/API: _add after deploy_
+Administrators can:
+
+- Log in securely
+- Add, edit, and delete courses
+- Manage student records
+- Monitor enrollments
+- Generate reports
+- Update course content
+- View analytics dashboards
+
+## System Modules
+
+### Module 1: User Authentication
+
+**Features**
+
+- Student Registration
+- Student Login
+- Password Encryption
+- Forgot Password
+- JWT Authentication
+
+**Database Fields**
+
+| Field | Type |
+|---|---|
+| Student ID | Integer |
+| Name | String |
+| Email | String |
+| Password | Encrypted String |
+| Department | String |
+
+### Module 2: Course Management
+
+**Features**
+
+- Add Course
+- Update Course
+- Delete Course
+- View Course Details
+
+**Course Information**
+
+| Field | Description |
+|---|---|
+| Course ID | Unique ID |
+| Course Name | Course Title |
+| Instructor | Faculty Name |
+| Duration | Number of Weeks |
+| Description | Course Information |
+| Category | Programming, AI, Web, etc. |
+
+### Module 3: Course Enrollment
+
+**Features**
+
+- Browse Courses
+- Search Courses
+- Enroll in Course
+- View Enrolled Courses
+
+**Workflow**
+
+Student Login
+
+↓
+
+Browse Courses
+
+↓
+
+Select Course
+
+↓
+
+Enroll
+
+↓
+
+Confirmation
+
+### Module 4: Learning Management
+
+**Features**
+
+- View Modules
+- Access Learning Materials
+- Mark Module as Completed
+- Continue Learning
+
+**Example Course Structure**
+
+Course: Full Stack Development
+
+Modules:
+
+- HTML
+- CSS
+- JavaScript
+- React
+- Node.js
+- MongoDB
+
+Students complete each module sequentially while their progress is automatically recorded.
+
+### Module 5: Progress Tracking
+
+**Features**
+
+- Completion Percentage
+- Course Progress Bar
+- Completed Modules
+- Pending Modules
+
+**Example**
+
+| Course | Progress |
+|---|---:|
+| Python | 80% |
+| React | 60% |
+| DBMS | 100% |
+
+### Module 6: Dashboard
+
+**Student Dashboard**
+
+Displays:
+
+- Total Courses Enrolled
+- Courses Completed
+- Ongoing Courses
+- Progress Statistics
+
+**Administrator Dashboard**
+
+Displays:
+
+- Total Students
+- Total Courses
+- Active Enrollments
+- Completion Reports
+
+### Module 7: Notifications
+
+**Features**
+
+- New Course Alerts
+- Enrollment Confirmation
+- Assignment Reminders
+- Completion Certificates
+
+**Real-Time Communication**
+
+- WebSockets
+- Socket.IO
+
+## Database Design
+
+### Students Table
+
+- student_id
+- name
+- email
+- password
+- department
+
+### Courses Table
+
+- course_id
+- course_name
+- instructor
+- duration
+- description
+
+### Enrollment Table
+
+- enrollment_id
+- student_id
+- course_id
+- enrollment_date
+
+### Progress Table
+
+- progress_id
+- student_id
+- course_id
+- completed_modules
+- progress_percentage
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | HTML5, CSS3, Bootstrap, JavaScript, React.js |
+| Backend | Node.js, Express.js |
+| Database | MongoDB |
+| Authentication | JWT, bcrypt |
+| Real-Time Communication | Socket.IO |
+| API Testing | Postman |
+| Version Control | Git, GitHub |
+| Deployment | Render / Vercel / Railway |
